@@ -2,7 +2,7 @@ In a [previous blog](https://ccpsnorlax.blogspot.is/2017/09/working-with-xmpp-in
 and showed how to set up an Xmpp server and connecting to it via Python. In
 this blog I will dig deeper and show how to implement a simple echo bot.
 
-The code for this lives on Github: [https://github.com/snorristurluson/xmpp-chatbot]
+The code for this lives on Github: [https://github.com/snorristurluson/xmpp-chatbot]()
 
 ## Connecting
 
