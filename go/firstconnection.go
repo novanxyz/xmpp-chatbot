@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-func mainx() {
-	conn, err := net.Dial("tcp", ":5222")
+func main() {
+	conn, err := net.Dial("tcp", "localhost:5222")
 	if err != nil {
 		fmt.Errorf("Couldn't connect")
 	}
@@ -17,5 +17,5 @@ func mainx() {
 
 	recvBuf := make([]byte, 4096)
     conn.Read(recvBuf)
-    fmt.Print("Message Received:", string(recvBuf))
+    fmt.Print("Message Received: ", string(recvBuf))
 }
