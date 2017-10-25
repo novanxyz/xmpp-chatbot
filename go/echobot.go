@@ -6,9 +6,20 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"flag"
 )
 
 func main() {
+	hostPtr := flag.String("host", "localhost", "Host name")
+	serverPtr := flag.String("server", "", "Server (defaults to using host name)")
+
+	flag.Parse()
+
+	server := *serverPtr
+	if server == "" {
+		server = *hostPtr
+	}
+
 	handler := xmpp.NewXmppHandler()
 
 	HandleMessage := func (element *xmpp.XmppElement) {
@@ -25,8 +36,8 @@ func main() {
 	}
 	handler.HandleMessage = HandleMessage
 	handler.Connect(
-		"localhost",
-		"localhost",
+		server,
+		*hostPtr,
 		"echobot",
 		"echobot")
 
