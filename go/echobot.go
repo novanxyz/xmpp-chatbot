@@ -13,9 +13,15 @@ func main() {
 
 	HandleMessage := func (element *xmpp.XmppElement) {
 		sender := element.Attributes["from"]
-		msg := element.Children[0].Text
-		fmt.Printf("Got message from %s\n%s\n", sender, msg)
-		handler.Message(sender, msg)
+		text := ""
+		for _, child := range(element.Children) {
+			if child.Tag == "body" {
+				text = child.Text
+			}
+		}
+
+		fmt.Printf("Got message from %s\n%s\n", sender, text)
+		handler.Message(sender, text)
 	}
 	handler.HandleMessage = HandleMessage
 	handler.Connect(

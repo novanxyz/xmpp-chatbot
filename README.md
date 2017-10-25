@@ -1,7 +1,7 @@
 # xmpp-chatbot
 Simple chat bots for experimenting with XMPP.
 
-This is also my playground for trying out Python 3 asyncio, and I have
-plans for experiments with golang as well.
+There are now two separate sets of implementations for the bots,
+one in Python using asyncio, and one in Go.
 
 See my blog at [https://ccpsnorlax.blogspot.is/]()

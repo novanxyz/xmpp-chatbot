@@ -41,6 +41,7 @@ func (self *XmppHandler) Connect(server string, host string, username string, pa
 	self.connection = conn
 	self.host = host
 	self.username = username
+	self.jid = username
 	self.password = password
 
 	self.State = "waiting_for_stream"
@@ -48,6 +49,11 @@ func (self *XmppHandler) Connect(server string, host string, username string, pa
 	self.id = "bot"
 	go self.receive()
 	self.startStream()
+}
+
+func (self *XmppHandler) send(packet string) (int, error) {
+	fmt.Printf("Send: %s", packet)
+	return self.connection.Write([]byte(packet))
 }
 
 func (self * XmppHandler) receive() {
@@ -63,6 +69,7 @@ func (self * XmppHandler) receive() {
 	    parseErr := self.parser.Parse(msgReceived)
 	    if parseErr != nil {
 	    	fmt.Print(parseErr)
+	    	break
 	    }
 	    fmt.Printf("%d elements in queue\n", len(self.parser.queue))
 
@@ -145,7 +152,7 @@ func (self *XmppHandler) startStream() {
         "xmlns:stream='http://etherx.jabber.org/streams'>"
 
 	packet := fmt.Sprintf(template, self.host)
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 }
 
 func (self *XmppHandler) authenticate() {
@@ -156,7 +163,7 @@ func (self *XmppHandler) authenticate() {
 
     template := "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>%s</auth>"
     packet := fmt.Sprintf(template, encodedKey)
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 }
 
 func (self *XmppHandler) IssueRequest(request string, request_type string, to string, callback func(*XmppElement)) {
@@ -166,10 +173,10 @@ func (self *XmppHandler) IssueRequest(request string, request_type string, to st
 		to_clause = fmt.Sprintf("to='%s'", to)
 	}
 	template := "<iq id='%s' type='%s' from='%s' %s>%s</iq>"
-	packet := fmt.Sprintf(template, request_id, request_type, self.username, to_clause, request)
+	packet := fmt.Sprintf(template, request_id, request_type, self.jid, to_clause, request)
 	fmt.Println(packet)
 	self.requests[request_id] = callback
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 }
 
 func (self *XmppHandler) bind() {
@@ -202,7 +209,7 @@ func (self *XmppHandler) handleSession(response *XmppElement) {
 func (self *XmppHandler) sendInitialPresence() {
 	self.State = "ready"
     packet := "<presence><show/></presence>"
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 }
 
 func (self *XmppHandler) getRequestId() (string) {
@@ -213,14 +220,14 @@ func (self *XmppHandler) getRequestId() (string) {
 
 func (self *XmppHandler) Message(receiver string, msg string) {
     template := "<message from='%s' to='%s' xml:lang='en'><body>%s</body></message>"
-    packet := fmt.Sprintf(template, self.username, receiver, msg)
-    self.connection.Write([]byte(packet))
+    packet := fmt.Sprintf(template, self.jid, receiver, msg)
+    self.send(packet)
 }
 
 func (self *XmppHandler) GroupChat(receiver string, msg string) {
     template := "<message from='%s' to='%s' type='groupchat' xml:lang='en'><body>%s</body></message>"
-    packet := fmt.Sprintf(template, self.username, receiver, msg)
-    self.connection.Write([]byte(packet))
+    packet := fmt.Sprintf(template, self.jid, receiver, msg)
+	self.send(packet)
 }
 
 func (self *XmppHandler) JoinRoom(room string) string {
@@ -228,7 +235,7 @@ func (self *XmppHandler) JoinRoom(room string) string {
     template := "<presence from='%s' id='%s' to='%s/%s'>" +
     	"<x xmlns='http://jabber.org/protocol/muc'/></presence>"
 	packet := fmt.Sprintf(template, self.jid, request_id, room, self.username)
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 	return request_id
 }
 
@@ -236,6 +243,6 @@ func (self *XmppHandler) LeaveRoom(room string) string {
 	request_id := self.getRequestId()
     template := "<presence from='%s' id='%s' to='%s/%s' type='unavailable'/>"
 	packet := fmt.Sprintf(template, self.jid, request_id, room, self.username)
-	self.connection.Write([]byte(packet))
+	self.send(packet)
 	return request_id
 }
